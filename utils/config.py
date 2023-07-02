@@ -41,7 +41,7 @@ parser.add_argument('--encoder_hidden_dim', '-ehd', type=int, default=256)
 parser.add_argument('--slot_decoder_hidden_dim', '-sdhd', type=int, default=64)
 parser.add_argument('--attention_hidden_dim', '-ahd', type=int, default=1024)
 parser.add_argument('--attention_output_dim', '-aod', type=int, default=128)
-
+parser.add_argument('--use_bert',type=bool,default=False)
 args = parser.parse_args()
 args.gpu = args.gpu and torch.cuda.is_available()
 print(str(vars(args)))

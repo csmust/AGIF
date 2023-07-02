@@ -60,8 +60,13 @@ We highly suggest you using [Anaconda](https://www.anaconda.com/) to manage your
 The script **train.py** acts as a main function to the project, you can run the experiments by the following commands.
 
 ```Shell
+python train.py -g -bs=8 -ne=100 -dd=./data/diachat -lod=./log/diachat -sd=./save/diachat -nh=4 -wed=32 -sed=128 -ied=64 -sdhd=64 -dghd=64 -ln=diachat.txt
+
+
 # MixATIS dataset
 python train.py -g -bs=16 -ne=100 -dd=./data/MixATIS -lod=./log/MixATIS -sd=./save/MixATIS -nh=4 -wed=32 -sed=128 -ied=64 -sdhd=64 -dghd=64 -ln=MixATIS.txt
+
+
 
 # MixSNIPS dataset
 python train.py -g -bs=64 -ne=50 -dd=./data/MixSNIPS -lod=./log/MixSNIPS -sd=./save/MixSNIPS -nh=8 -wed=32 -ied=64 -sdhd=64 -ln=MixSNIPS.txt
@@ -87,7 +92,12 @@ python train.py -g -bs=16 -ne=0 -dd=./data/ATIS -lod=./log/ATIS -sd=./save/best/
 
 # SNIPS dataset
 python train.py -g -bs=16 -ne=0 -dd=./data/SNIPS -lod=./log/SNIPS -sd=./save/best/SNIPS -ld=./save/best/SNIPS -nh=8 -wed=64 -ied=64 -sdhd=64 -ln=SNIPS.txt 
+
+
 ```
+
+
+
 
 Due to some stochastic factors(*e.g*., GPU and environment), it maybe need to slightly tune the hyper-parameters using grid search to reproduce the results reported in our paper. All the hyper-parameters are in the `utils/config.py` and here are the suggested hyper-parameter settings:
 

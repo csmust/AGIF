@@ -23,7 +23,7 @@ class Alphabet(object):
         self.__if_use_unk = if_use_unk
 
         self.__index2instance = OrderedSet()
-        self.__instance2index = OrderedDict()
+        self.__instance2index = OrderedDict()    # OrderedDict()保证了字典的有序性
 
         # Counter Object record the frequency
         # of element occurs in raw text.
@@ -42,7 +42,7 @@ class Alphabet(object):
 
     def add_instance(self, instance, multi_intent=False):
         """ Add instances to alphabet.
-
+        从训练集中采词，向词表中添加实例
         1, We support any iterative data structure which
         contains elements of str type.
 
@@ -52,7 +52,7 @@ class Alphabet(object):
         :param instance: is given instance or a list of it.
         """
 
-        if isinstance(instance, (list, tuple)):
+        if isinstance(instance, (list, tuple)):  #isinstance()用来判断一个对象是否是一个已知的类型 list, tuple
             for element in instance:
                 self.add_instance(element, multi_intent=multi_intent)
             return
@@ -72,6 +72,7 @@ class Alphabet(object):
 
     def get_index(self, instance, multi_intent=False):
         """ Serialize given instance and return.
+        多意图默认为false
 
         For unknown words, the return index of alphabet
         depends on variable self.__use_unk:
@@ -178,12 +179,12 @@ class DatasetManager(object):
         self.__slot_alphabet = Alphabet('slot', if_use_pad=False, if_use_unk=False)
         self.__intent_alphabet = Alphabet('intent', if_use_pad=False, if_use_unk=False)
 
-        # Record the raw text of dataset.
+        # Record the raw text of dataset.   原始文本数据
         self.__text_word_data = {}
         self.__text_slot_data = {}
         self.__text_intent_data = {}
 
-        # Record the serialization of dataset.
+        # Record the serialization of dataset.  数字序列化的数据
         self.__digit_word_data = {}
         self.__digit_slot_data = {}
         self.__digit_intent_data = {}
@@ -229,6 +230,10 @@ class DatasetManager(object):
     @property
     def slot_forcing_rate(self):
         return self.__args.slot_forcing_rate
+    
+    @property
+    def use_bert(self):
+        return self.__args.use_bert
 
     def show_summary(self):
         """
@@ -259,7 +264,7 @@ class DatasetManager(object):
         dev_path = os.path.join(self.__args.data_dir, 'dev.txt')
         test_path = os.path.join(self.__args.data_dir, 'test.txt')
 
-        self.add_file(train_path, 'train', if_train_file=True)
+        self.add_file(train_path, 'train', if_train_file=True)  # 训练集
         self.add_file(dev_path, 'dev', if_train_file=False)
         self.add_file(test_path, 'test', if_train_file=False)
 
@@ -293,7 +298,7 @@ class DatasetManager(object):
         text, slot, intent = self.__read_file(file_path)
 
         if if_train_file:
-            self.__word_alphabet.add_instance(text)
+            self.__word_alphabet.add_instance(text)  # 将文本转化为数字序列 BERT TODO
             self.__slot_alphabet.add_instance(slot)
             self.__intent_alphabet.add_instance(intent, multi_intent=True)
 
@@ -303,7 +308,7 @@ class DatasetManager(object):
         self.__text_intent_data[data_name] = intent
 
         # Serialize raw text and stored it.
-        self.__digit_word_data[data_name] = self.__word_alphabet.get_index(text)
+        self.__digit_word_data[data_name] = self.__word_alphabet.get_index(text)          # 将文本转化为数字序列
         if if_train_file:
             self.__digit_slot_data[data_name] = self.__slot_alphabet.get_index(slot)
             self.__digit_intent_data[data_name] = self.__intent_alphabet.get_index(intent, multi_intent=True)

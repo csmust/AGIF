@@ -9,6 +9,7 @@ from torch.nn.utils.rnn import pad_packed_sequence
 from torch.nn.parameter import Parameter
 import numpy as np
 from utils.process import normalize_adj
+from transformers import BertModel
 
 
 class GraphAttentionLayer(nn.Module):
@@ -76,7 +77,7 @@ class GAT(nn.Module):
     def forward(self, x, adj):
         x = F.dropout(x, self.dropout, training=self.training)
         input = x
-        x = torch.cat([att(x, adj) for att in self.attentions], dim=2)  # att 是一个图注意力层  多头图注意力最后串联
+        x = torch.cat([att(x, adj) for att in self.attentions], dim=2)
         if self.nlayers > 2:
             for i in range(self.nlayers - 2):
                 temp = []
@@ -87,7 +88,7 @@ class GAT(nn.Module):
                 x = torch.cat(temp, dim=2) + cur_input
         x = F.dropout(x, self.dropout, training=self.training)
         x = F.elu(self.out_att(x, adj))
-        return x + input # 残差链接
+        return x + input
 
 
 class Encoder(nn.Module):
@@ -129,7 +130,7 @@ class ModelManager(nn.Module):
     def __init__(self, args, num_word, num_slot, num_intent):
         super(ModelManager, self).__init__()
 
-        self.__num_word = num_word    #词表大小
+        self.__num_word = num_word
         self.__num_slot = num_slot
         self.__num_intent = num_intent
         self.__args = args
@@ -148,7 +149,7 @@ class ModelManager(nn.Module):
             nn.LeakyReLU(args.alpha),
             nn.Linear(self.__args.encoder_hidden_dim + self.__args.attention_output_dim, self.__num_intent),
         )
-        # 意图编码层：
+
         self.__intent_embedding = nn.Parameter(
             torch.FloatTensor(self.__num_intent, self.__args.intent_embedding_dim))  # 191, 32
         nn.init.normal_(self.__intent_embedding.data)
@@ -201,7 +202,7 @@ class ModelManager(nn.Module):
         g_hiddens, g_c = self.G_encoder(word_tensor, seq_lens)
         pred_intent = self.__intent_decoder(g_c)
         intent_index = (torch.sigmoid(pred_intent) > self.__args.threshold).nonzero()
-        adj = self.generate_adj_gat(intent_index, len(pred_intent))        # 用预测的矩阵生成相连的边
+        adj = self.generate_adj_gat(intent_index, len(pred_intent))
 
         pred_slot = self.__slot_decoder(
             g_hiddens, seq_lens,
@@ -226,6 +227,7 @@ class LSTMEncoder(nn.Module):
 
     def __init__(self, embedding_dim, hidden_dim, dropout_rate):
         super(LSTMEncoder, self).__init__()
+        self.bert = BertModel.from_pretrained("hfl/chinese-macbert-large")
 
         # Parameter recording.
         self.__embedding_dim = embedding_dim
